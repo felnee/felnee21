@@ -66,6 +66,11 @@
         display: none;
       }
 
+      /* Use unified body gradient to avoid seams on narrow viewports */
+      #gift {
+        background: transparent;
+      }
+
       #gift .container {
         max-width: 1300px;
         margin: 0 auto;
@@ -103,6 +108,8 @@
         position: relative;
         width: 220px;
         height: 180px;
+        transform: perspective(720px) rotateX(var(--gift-tilt-x, 0deg)) rotateY(var(--gift-tilt-y, 0deg));
+        transform-style: preserve-3d;
         background: linear-gradient(135deg, #ff8fb4 0%, #ff5d8d 42%, #f64078 100%);
         border-radius: 20px;
         box-shadow:
@@ -111,14 +118,14 @@
           0 24px 36px rgba(255, 98, 144, 0.28),
           0 10px 0 rgba(210, 44, 99, 0.24);
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+        transition: transform 0.22s ease, box-shadow 0.2s ease, opacity 0.3s ease;
         margin: 16px auto 20px;
         overflow: visible;
         z-index: 0;
       }
 
       .gift-screen .big-gift-box:hover {
-        transform: translateY(-4px) scale(1.02);
+        transform: perspective(720px) rotateX(var(--gift-tilt-x, 0deg)) rotateY(var(--gift-tilt-y, 0deg)) translateY(-3px) scale(1.015);
       }
 
       .gift-screen .big-gift-box::before,
@@ -130,13 +137,25 @@
 
       .gift-screen .big-gift-box::before {
         left: 50%;
-        top: -12px;
-        width: 86%;
-        height: 18px;
+        top: -18px;
+        width: 106%;
+        height: 26px;
         transform: translateX(-50%);
-        border-radius: 10px 10px 6px 6px;
-        box-shadow: 0 2px 0 rgba(255,255,255,0.18);
-        z-index: 0;
+        transform-origin: 50% 100%;
+        border-radius: 12px 12px 7px 7px;
+        background: linear-gradient(180deg, #fffafd 0%, #ffeaf2 72%, #ffc3d8 100%);
+        box-shadow: 0 7px 12px rgba(179, 48, 99, 0.16), inset 0 2px 0 rgba(255,255,255,0.9);
+        z-index: 3;
+        transition: transform 320ms ease, box-shadow 320ms ease;
+      }
+
+      .gift-screen .big-gift-box.opening::before {
+        animation: giftLidPop 760ms cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+      }
+
+      .gift-screen .big-gift-box.lid-open::before {
+        transform: translate(-50%, -42px) rotate(-17deg) scale(1.04);
+        box-shadow: 0 12px 18px rgba(179, 48, 99, 0.2), 0 0 18px rgba(255,255,255,0.7);
       }
 
       .gift-screen .big-gift-box::after {
@@ -147,6 +166,17 @@
         transform: translateX(-50%);
         border-radius: 999px;
         z-index: 0;
+      }
+
+      .gift-screen {
+        gap: 18px;
+        padding-top: 28px;
+      }
+
+      .gift-screen .gift-text {
+        position: relative;
+        z-index: 2; /* ensure text sits above pseudo elements */
+        margin-bottom: 6px;
       }
 
       .gift-screen .gift-ribbon {
@@ -181,6 +211,10 @@
 
       .gift-screen .big-gift-box.shake-box {
         animation: giftShake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) 2;
+      }
+
+      .gift-screen .big-gift-box.opening {
+        animation: giftTapShake 620ms ease-in-out 1;
       }
 
       .gift-screen .big-gift-box.burst-box {
@@ -233,6 +267,27 @@
         height: 10px;
         border-radius: 50%;
         background: radial-gradient(circle, #fff8c7 0%, #ffd96a 38%, #ffb347 100%);
+      }
+
+      .gift-screen .burst-particle.sparkle {
+        width: var(--size);
+        height: var(--size);
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff 0%, #fff9cf 32%, #ffb6d2 72%, rgba(255, 106, 160, 0.2) 100%);
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.95), 0 0 24px rgba(255, 109, 164, 0.68);
+      }
+
+      @keyframes giftTapShake {
+        0%, 100% { transform: perspective(720px) rotateX(var(--gift-tilt-x, 0deg)) rotateY(var(--gift-tilt-y, 0deg)) translateX(0) rotateZ(0); }
+        22% { transform: perspective(720px) rotateX(var(--gift-tilt-x, 0deg)) rotateY(var(--gift-tilt-y, 0deg)) translateX(-7px) rotateZ(-3deg); }
+        46% { transform: perspective(720px) rotateX(var(--gift-tilt-x, 0deg)) rotateY(var(--gift-tilt-y, 0deg)) translateX(7px) rotateZ(3deg); }
+        70% { transform: perspective(720px) rotateX(var(--gift-tilt-x, 0deg)) rotateY(var(--gift-tilt-y, 0deg)) translateX(-4px) rotateZ(-2deg); }
+      }
+
+      @keyframes giftLidPop {
+        0% { transform: translateX(-50%) rotate(0deg); }
+        30% { transform: translate(-50%, -8px) rotate(4deg); }
+        100% { transform: translate(-50%, -42px) rotate(-17deg) scale(1.04); }
       }
 
       @keyframes giftShake {
@@ -348,7 +403,7 @@
         inset: 0;
         pointer-events: none;
         overflow: hidden;
-        z-index: 0;
+        z-index: 0; /* behind content */
         filter: blur(0.5px);
       }
 
@@ -357,30 +412,110 @@
         bottom: -120px;
         width: 18px;
         height: 18px;
-        background: rgba(255, 176, 203, 0.78);
+        background: var(--heart-color, rgba(255, 125, 172, 0.84));
         transform: rotate(-45deg);
         animation: floatUp linear infinite;
-        opacity: 0.8;
-        box-shadow: 0 0 12px rgba(255, 176, 203, 0.16);
+        opacity: var(--heart-opacity, 0.8);
+        box-shadow: 0 0 13px rgba(255, 92, 153, 0.22);
+        translate: var(--parallax-x, 0px) var(--parallax-y, 0px);
+        transition: translate 520ms ease-out;
+        will-change: translate, transform;
+      }
+
+      .heart--far {
+        filter: blur(0.8px);
+      }
+
+      .heart--mid {
+        filter: blur(0.25px);
+      }
+
+      .heart--near {
+        filter: drop-shadow(0 0 5px rgba(255, 143, 183, 0.2));
+      }
+
+      .interaction-heart {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        width: var(--heart-size);
+        height: var(--heart-size);
+        border-radius: 2px;
+        background: var(--heart-color);
+        opacity: 0;
+        pointer-events: none;
+        filter: drop-shadow(0 1px 5px rgba(255, 96, 151, 0.28));
+      }
+
+      .interaction-heart::before,
+      .interaction-heart::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: inherit;
+      }
+
+      .interaction-heart::before {
+        top: -50%;
+        left: 0;
+      }
+
+      .interaction-heart::after {
+        top: 0;
+        left: 50%;
+      }
+
+      .interaction-heart.trail-heart {
+        animation: pointerHeartTrail 850ms ease-out forwards;
+      }
+
+      .interaction-heart.burst-heart {
+        animation: pointerHeartBurst 950ms cubic-bezier(0.16, 0.72, 0.28, 1) var(--delay) forwards;
+      }
+
+      @keyframes pointerHeartTrail {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) rotate(-45deg) scale(0.5);
+        }
+        22% { opacity: 0.82; }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) translate(var(--drift-x), var(--drift-y)) rotate(-45deg) scale(1.1);
+        }
+      }
+
+      @keyframes pointerHeartBurst {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) rotate(-45deg) scale(0.45);
+        }
+        16% { opacity: 0.95; }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rotation)) scale(0.35);
+        }
       }
 
       .heart::before,
       .heart::after {
         content: "";
         position: absolute;
-        width: 18px;
-        height: 18px;
-        background: rgba(255, 176, 203, 0.78);
+        width: 100%;
+        height: 100%;
+        background: inherit;
         border-radius: 50%;
       }
 
       .heart::before {
-        top: -9px;
+        top: -50%;
         left: 0;
       }
 
       .heart::after {
-        left: 9px;
+        left: 50%;
         top: 0;
       }
 
@@ -393,7 +528,7 @@
           transform: translateY(0) rotate(-45deg) scale(0.8);
           opacity: 0;
         }
-        15% { opacity: 0.8; }
+        15% { opacity: var(--heart-opacity, 0.8); }
         100% {
           transform: translateY(-110vh) rotate(-45deg) scale(1.2);
           opacity: 0;
@@ -456,9 +591,13 @@
       }
 
       .card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
         width: min(1100px, 100%);
         background: rgba(255, 255, 255, 0.42);
-        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(16px) saturate(135%);
+        backdrop-filter: blur(16px) saturate(135%);
         border: 1px solid rgba(255,255,255,0.5);
         border-radius: 28px;
         box-shadow: 0 18px 34px var(--shadow);
@@ -468,6 +607,48 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        transition: box-shadow 240ms ease, border-color 240ms ease;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        background: radial-gradient(
+          circle at var(--glow-x, 50%) var(--glow-y, 50%),
+          rgba(255, 245, 250, 0.44) 0%,
+          rgba(255, 157, 191, 0.2) 20%,
+          rgba(255, 157, 191, 0.07) 42%,
+          transparent 66%
+        );
+        transition: opacity 260ms ease;
+      }
+
+      .card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .card.has-mouse-glow {
+        border-color: rgba(255, 255, 255, 0.82);
+        box-shadow: 0 20px 40px rgba(164, 92, 117, 0.17), 0 0 28px rgba(255, 143, 183, 0.13);
+      }
+
+      .card.has-mouse-glow::before {
+        opacity: 1;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .card {
+          transition: none;
+        }
+
+        .card::before {
+          transition: none;
+        }
       }
 
       h1 {
@@ -656,6 +837,69 @@
         transform: translateY(-2px);
       }
 
+      .magnetic-btn {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        transform: translate3d(var(--mag-x, 0px), var(--mag-y, 0px), 0) scale(var(--mag-scale, 1));
+        transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1), box-shadow 220ms ease, filter 220ms ease;
+      }
+
+      .magnetic-btn > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .magnetic-btn::after {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        left: var(--ripple-x, 50%);
+        top: var(--ripple-y, 50%);
+        width: 26px;
+        height: 26px;
+        border: 2px solid rgba(255,255,255,0.9);
+        border-radius: 50%;
+        background: rgba(255, 184, 209, 0.3);
+        box-shadow: 0 0 18px rgba(255, 246, 250, 0.85), 0 0 34px rgba(255, 108, 159, 0.5);
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.2);
+        pointer-events: none;
+      }
+
+      .magnetic-btn:hover,
+      .magnetic-btn.is-magnetic {
+        --mag-scale: 1.035;
+        transform: translate3d(var(--mag-x, 0px), var(--mag-y, 0px), 0) scale(var(--mag-scale, 1));
+        box-shadow: 0 14px 30px rgba(255, 90, 138, 0.34), 0 0 22px rgba(255, 132, 177, 0.24);
+        filter: saturate(1.08);
+      }
+
+      .magnetic-btn.is-rippling::after {
+        animation: buttonRipple 480ms ease-out both;
+      }
+
+      @keyframes buttonRipple {
+        0% {
+          opacity: 0.95;
+          transform: translate(-50%, -50%) scale(0.2);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(10);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .magnetic-btn {
+          transition: none;
+        }
+
+        .magnetic-btn.is-rippling::after {
+          animation-duration: 220ms;
+        }
+      }
+
       .btn-primary {
         background: linear-gradient(135deg, var(--pink), var(--pink-dark));
         color: white;
@@ -722,14 +966,44 @@
       .message-box {
         position: relative;
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.20);
-        border: 1px solid rgba(255,255,255,0.25);
+        isolation: isolate;
+        background: rgba(255, 255, 255, 0.24);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+        backdrop-filter: blur(16px) saturate(140%);
+        border: 1px solid rgba(255,255,255,0.72);
         border-radius: 24px;
         padding: 18px 16px 18px;
-        min-height: 3.6em;
-        box-shadow: none;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
         min-height: 260px;
+        box-shadow: 0 14px 32px rgba(111, 61, 83, 0.11), inset 0 1px 0 rgba(255,255,255,0.8);
+        transform: perspective(900px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) translateY(var(--lift, 0px));
+        transform-style: preserve-3d;
+        transition: transform 180ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        will-change: transform;
+      }
+
+      .message-box::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        opacity: 0;
+        pointer-events: none;
+        background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 0%), rgba(255, 130, 177, 0.32), transparent 55%);
+        transition: opacity 220ms ease;
+      }
+
+      .message-box > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .message-box.is-hovered {
+        border-color: rgba(255,255,255,0.96);
+        box-shadow: 0 22px 42px rgba(174, 66, 112, 0.2), 0 0 28px rgba(255, 116, 166, 0.24), inset 0 1px 0 rgba(255,255,255,0.94);
+      }
+
+      .message-box.is-hovered::before {
+        opacity: 1;
       }
 
       .message-box p.typing::after {
@@ -747,6 +1021,13 @@
         0% { opacity: 1; }
         50% { opacity: 0; }
         100% { opacity: 1; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .message-box {
+          transition: box-shadow 220ms ease, border-color 220ms ease;
+          transform: none;
+        }
       }
 
       .message-box .icon {
@@ -820,13 +1101,13 @@
       .letter-modal {
         position: fixed;
         inset: 0;
-        background: rgba(74, 48, 60, 0.28);
+        background: rgba(74, 48, 60, 0.46);
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.2s ease;
+        transition: opacity 340ms ease, visibility 340ms ease;
         z-index: 50;
       }
 
@@ -834,6 +1115,138 @@
       .letter-modal.show {
         opacity: 1;
         visibility: visible;
+      }
+
+      .letter-reveal {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        overflow: hidden;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 380ms ease;
+      }
+
+      .letter-reveal.is-active {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .letter-reveal.is-fading {
+        opacity: 0;
+      }
+
+      .envelope-stage {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: min(250px, 68vw);
+        height: 156px;
+        perspective: 900px;
+        transform: translate(-50%, calc(-50% + 46px)) scale(0.76);
+        opacity: 0;
+      }
+
+      .letter-reveal.is-active .envelope-stage {
+        animation: envelopeLift 420ms cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+      }
+
+      .letter-envelope {
+        position: absolute;
+        inset: 0;
+        border-radius: 10px 10px 18px 18px;
+        background: linear-gradient(145deg, #f86d9a, #e9447d);
+        box-shadow: 0 18px 44px rgba(87, 34, 59, 0.26), inset 0 1px 0 rgba(255,255,255,0.55);
+        transform-style: preserve-3d;
+      }
+
+      .envelope-paper {
+        position: absolute;
+        left: 8%;
+        bottom: 5px;
+        z-index: 2;
+        width: 84%;
+        height: 118px;
+        display: grid;
+        place-items: start center;
+        padding-top: 17px;
+        border-radius: 6px;
+        background: linear-gradient(160deg, #fffdfd, #fff0f5);
+        color: #d94d78;
+        font-size: 1.05rem;
+        font-weight: 800;
+        box-shadow: 0 2px 10px rgba(102, 44, 68, 0.14);
+        transform: translateY(48px) scale(0.86);
+        opacity: 0.9;
+      }
+
+      .envelope-paper span {
+        color: #f279a0;
+        font-size: 1.25rem;
+      }
+
+      .envelope-front {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        border-radius: 10px 10px 18px 18px;
+        background: linear-gradient(145deg, #ff91b0, #ec4e83);
+        clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+      }
+
+      .envelope-flap {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 4;
+        height: 78%;
+        border-radius: 10px 10px 0 0;
+        background: linear-gradient(180deg, #ffabc2, #f36b98);
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+        transform-origin: 50% 0;
+        backface-visibility: hidden;
+      }
+
+      .letter-reveal.is-opening .envelope-flap {
+        animation: envelopeFlapOpen 520ms ease-in forwards;
+      }
+
+      .letter-reveal.is-opening .envelope-paper {
+        animation: envelopePaperRise 1080ms cubic-bezier(0.18, 0.74, 0.24, 1) 240ms forwards;
+      }
+
+      @keyframes envelopeLift {
+        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      }
+
+      @keyframes envelopeFlapOpen {
+        to { transform: rotateX(180deg); opacity: 0.72; }
+      }
+
+      @keyframes envelopePaperRise {
+        0% { transform: translateY(48px) scale(0.86); opacity: 0.9; }
+        42% { opacity: 1; }
+        100% { transform: translateY(-18vh) scale(2.45); opacity: 0; }
+      }
+
+      .letter-modal.from-envelope .letter-card {
+        animation: letterFromEnvelope 420ms cubic-bezier(0.18, 0.74, 0.24, 1) both;
+      }
+
+      .password-panel {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+        transition: opacity 300ms ease, transform 300ms cubic-bezier(0.2, 0.75, 0.25, 1);
+      }
+
+      .password-modal.show .password-panel {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      @keyframes letterFromEnvelope {
+        from { opacity: 0; transform: translateY(18px) scale(0.94); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
       }
 
       .password-panel,
@@ -854,20 +1267,108 @@
         font-size: 1.7rem;
       }
 
+      .password-panel h3 {
+        font-size: clamp(1.2rem, 4.6vw, 1.55rem);
+        line-height: 1.35;
+      }
+
+      .password-description {
+        margin: -4px 0 18px;
+        color: #806775;
+        font-size: 0.94rem;
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      .password-lock {
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border: 1px solid rgba(232, 84, 131, 0.16);
+        border-radius: 50%;
+        background: #fff0f5;
+        color: #d94d78;
+        font-size: 1.9rem;
+        line-height: 1;
+        box-shadow: 0 8px 20px rgba(232, 84, 131, 0.12);
+        transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      }
+
+      .password-lock.unlocked {
+        color: #ed3f7d;
+        background: #fff7fa;
+        border-color: rgba(237, 63, 125, 0.38);
+        animation: lockToHeart 680ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+      }
+
+      @keyframes lockToHeart {
+        0% { transform: scale(1) rotate(0deg); box-shadow: 0 8px 20px rgba(232, 84, 131, 0.12); }
+        38% { transform: scale(0.78) rotate(-14deg); }
+        72% { transform: scale(1.22) rotate(8deg); box-shadow: 0 0 24px rgba(255, 86, 147, 0.72), 0 0 54px rgba(255, 142, 184, 0.52); }
+        100% { transform: scale(1.08) rotate(0deg); box-shadow: 0 0 18px rgba(255, 86, 147, 0.58), 0 0 40px rgba(255, 142, 184, 0.38); }
+      }
+
+      .password-hint {
+        margin: 0 0 14px;
+        color: #94707f;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .password-lock.unlocked {
+          animation: none;
+          box-shadow: 0 0 20px rgba(255, 86, 147, 0.52);
+        }
+      }
+
       .password-panel input {
         width: 100%;
         border: 1px solid rgba(255, 120, 167, 0.35);
         border-radius: 12px;
-        padding: 14px 16px;
+        padding: 14px 76px 14px 16px;
         font-size: 1.05rem;
         outline: none;
         color: var(--text);
         background: rgba(255,255,255,0.9);
       }
 
+      .password-input-wrap {
+        position: relative;
+      }
+
+      .password-visibility {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        min-width: 54px;
+        min-height: 36px;
+        padding: 6px 9px;
+        border: 0;
+        border-radius: 9px;
+        background: #fff0f5;
+        color: #c74771;
+        font: inherit;
+        font-size: 0.84rem;
+        font-weight: 700;
+        cursor: pointer;
+        transform: translateY(-50%);
+      }
+
+      .password-visibility:hover {
+        background: #ffe3ed;
+      }
+
       .password-panel input:focus {
         border-color: rgba(255, 90, 138, 0.5);
         box-shadow: 0 0 0 4px rgba(255, 90, 138, 0.08);
+      }
+
+      .password-panel input.shake {
+        animation: shakeAnim 0.35s ease-in-out;
       }
 
       .modal-actions {
@@ -907,33 +1408,397 @@
 
       .letter-card {
         position: relative;
-        width: min(620px, 88vw);
-        padding: 26px 28px 18px;
+        isolation: isolate;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        width: min(680px, 92vw);
+        max-height: min(88dvh, 760px);
+        padding: 0;
+        border: 2px solid #fff;
+        border-radius: 28px;
+        background: #fffafc;
+        box-shadow: 0 28px 80px rgba(77, 36, 57, 0.3);
+        animation: letterPop 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      .letter-scroll {
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(217, 77, 120, 0.42) transparent;
+        padding: 58px clamp(22px, 5vw, 52px) 30px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .letter-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .letter-scroll::-webkit-scrollbar-track {
+        background: transparent;
+        margin: 18px 0;
+      }
+
+      .letter-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid #fffafc;
+        border-radius: 999px;
+        background: rgba(217, 77, 120, 0.42);
+      }
+
+      .letter-card::before {
+        content: "";
+        position: absolute;
+        inset: 9px;
+        border: 1px dashed rgba(232, 84, 131, 0.3);
+        border-radius: 20px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .letter-card::after {
+        content: "♥";
+        position: absolute;
+        right: 28px;
+        bottom: 12px;
+        color: rgba(232, 84, 131, 0.12);
+        font-size: 5.5rem;
+        line-height: 1;
+        transform: rotate(12deg);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      @keyframes letterPop {
+        from { opacity: 0; transform: translateY(18px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      .letter-kicker {
+        margin: 0 auto 8px;
+        color: #b66a83;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .letter-card h3 {
+        margin: 0 0 20px;
+        font-size: clamp(1.8rem, 5vw, 2.35rem);
+        line-height: 1.2;
+        color: #df3d70;
+      }
+
+      .letter-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 0 auto 18px;
+        color: #e96991;
+        font-size: 1.05rem;
+      }
+
+      .letter-divider::before,
+      .letter-divider::after {
+        content: "";
+        width: 42px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #efb1c4);
+      }
+
+      .letter-divider::after {
+        transform: rotate(180deg);
       }
 
       .letter-card .close-letter {
         position: absolute;
-        top: 12px;
-        right: 14px;
-        width: 34px;
-        height: 34px;
+        top: 10px;
+        right: 10px;
+        z-index: 4;
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
         border: none;
         border-radius: 50%;
-        background: rgba(255,110,154,0.12);
-        color: var(--pink-dark);
-        font-size: 1.4rem;
+        background: #ffe8f0;
+        color: #b92e5c;
+        font-size: 1.55rem;
+        line-height: 1;
         cursor: pointer;
+        box-shadow: 0 3px 10px rgba(117, 47, 73, 0.12);
+      }
+
+      .letter-card .close-letter:hover,
+      .letter-card .close-letter:focus-visible {
+        background: #ffd4e3;
+        outline: 3px solid rgba(217, 77, 120, 0.32);
+        outline-offset: 2px;
       }
 
       .letter-card .letter-content {
+        position: relative;
+        z-index: 1;
         margin: 0;
-        line-height: 1.9;
-        font-size: clamp(1rem, 1.6vw, 1.3rem);
-        color: rgba(70, 43, 61, 0.9);
+        line-height: 1.75;
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: #5c4857;
+      }
+
+      .letter-card .letter-kicker,
+      .letter-card h3,
+      .letter-card .letter-divider,
+      .letter-card .letter-content,
+      .letter-card .letter-signoff {
+        position: relative;
+        z-index: 1;
+      }
+
+      .letter-card .letter-content p {
+        margin: 0 0 14px;
+      }
+
+      .letter-content.is-revealing p {
+        animation: letterParagraphReveal 520ms cubic-bezier(0.2, 0.75, 0.25, 1) var(--paragraph-delay) both;
+      }
+
+      .letter-content.is-revealing p:nth-child(1) { --paragraph-delay: 80ms; }
+      .letter-content.is-revealing p:nth-child(2) { --paragraph-delay: 360ms; }
+      .letter-content.is-revealing p:nth-child(3) { --paragraph-delay: 640ms; }
+      .letter-content.is-revealing p:nth-child(4) { --paragraph-delay: 920ms; }
+
+      @keyframes letterParagraphReveal {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .letter-card .letter-content p:last-child {
+        margin-bottom: 0;
       }
 
       .letter-card .letter-content strong {
-        color: var(--pink-dark);
+        color: #df3d70;
+      }
+
+      .letter-signoff {
+        position: relative;
+        z-index: 1;
+        margin: 20px 0 0;
+        color: #d94d78;
+        font-size: 1rem;
+        font-weight: 700;
+        text-align: right;
+      }
+
+      .letter-signoff.is-beating {
+        transform-origin: right center;
+        animation: signoffHeartbeat 950ms ease-in-out 1.55s 2 both;
+      }
+
+      .surprise-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 48px;
+        margin: 26px auto 0;
+        padding: 12px 20px;
+        border: 1px solid rgba(226, 73, 127, 0.22);
+        border-radius: 999px;
+        background: linear-gradient(135deg, #fff1f6, #ffe3ed);
+        color: #c74370;
+        font: inherit;
+        font-weight: 750;
+        box-shadow: 0 8px 18px rgba(198, 70, 111, 0.12);
+        cursor: pointer;
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      .surprise-trigger:hover,
+      .surprise-trigger:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(198, 70, 111, 0.2);
+        outline: 3px solid rgba(217, 77, 120, 0.2);
+        outline-offset: 2px;
+      }
+
+      .surprise-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        background: rgba(61, 35, 50, 0.48);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 240ms ease, visibility 240ms ease;
+      }
+
+      .surprise-overlay.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .polaroid-card {
+        position: relative;
+        z-index: 1;
+        width: min(370px, 88vw);
+        padding: 16px 16px 20px;
+        border: 1px solid rgba(255,255,255,0.92);
+        background: #fffdfc;
+        box-shadow: 0 28px 72px rgba(45, 19, 34, 0.32);
+        transform: rotate(-2deg) translateY(14px) scale(0.94);
+        transition: transform 360ms cubic-bezier(0.2, 0.75, 0.25, 1);
+      }
+
+      .surprise-overlay.show .polaroid-card {
+        transform: rotate(-1deg) translateY(0) scale(1);
+      }
+
+      .polaroid-close {
+        position: absolute;
+        top: -15px;
+        right: -15px;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border: 2px solid #fffdfc;
+        border-radius: 50%;
+        background: #e94f82;
+        color: white;
+        font-size: 1.55rem;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(73, 34, 52, 0.22);
+      }
+
+      .polaroid-photo {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 42%, #fff8fb 0 14%, transparent 15%), linear-gradient(145deg, #ffdbe8, #f5b8d0 48%, #d8c3ed);
+        color: #c65079;
+        text-align: center;
+      }
+
+      .polaroid-placeholder {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        padding: 16px;
+        font-weight: 700;
+      }
+
+      .polaroid-placeholder[hidden],
+      .polaroid-photo img[hidden] {
+        display: none;
+      }
+
+      .polaroid-placeholder span {
+        font-size: 2.8rem;
+        filter: drop-shadow(0 4px 8px rgba(188, 59, 105, 0.22));
+      }
+
+      .polaroid-photo img {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .polaroid-caption {
+        margin: 16px 0 0;
+        color: #55424f;
+        font-family: "Segoe Print", "Comic Sans MS", cursive;
+        font-size: 1rem;
+        line-height: 1.55;
+        text-align: center;
+      }
+
+      .polaroid-secret {
+        margin: 12px 4px 0;
+        color: #bd3e6d;
+        font-size: 0.96rem;
+        line-height: 1.55;
+        text-align: center;
+      }
+
+      .surprise-sparkles {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .surprise-sparkle {
+        position: absolute;
+        left: var(--sparkle-x);
+        top: var(--sparkle-y);
+        color: var(--sparkle-color);
+        font-size: var(--sparkle-size);
+        opacity: 0;
+        animation: surpriseFloat var(--sparkle-duration) ease-out var(--sparkle-delay) both;
+      }
+
+      @keyframes surpriseFloat {
+        0% { opacity: 0; transform: translateY(14px) scale(0.6) rotate(-12deg); }
+        24% { opacity: 0.78; }
+        100% { opacity: 0; transform: translateY(-58px) scale(1.05) rotate(18deg); }
+      }
+
+      @keyframes signoffHeartbeat {
+        0%, 100% { transform: scale(1); text-shadow: none; }
+        18% { transform: scale(1.08); text-shadow: 0 0 10px rgba(255, 90, 138, 0.42); }
+        34% { transform: scale(1); }
+        52% { transform: scale(1.12); text-shadow: 0 0 16px rgba(255, 90, 138, 0.58); }
+        72% { transform: scale(1); text-shadow: none; }
+      }
+
+      @media (max-width: 600px) {
+        .letter-card {
+          width: min(94vw, 520px);
+          max-height: 84dvh;
+          border-radius: 24px;
+        }
+
+        .letter-card .close-letter {
+          top: 8px;
+          right: 8px;
+        }
+
+        .letter-scroll {
+          padding: 62px 22px 26px;
+        }
+
+        .letter-card .letter-content {
+          line-height: 1.65;
+        }
+
+        .polaroid-card {
+          width: min(370px, calc(100vw - 52px));
+          padding: 12px 12px 17px;
+        }
+
+        .polaroid-close {
+          top: -12px;
+          right: -12px;
+        }
       }
 
       .gift-box.exploding {
@@ -957,6 +1822,7 @@
         75% { transform: translateX(-5px); }
       }
 
+      /* Responsive tweaks for small screens: stack message cards vertically and ensure full-width */
       @media (max-width: 900px) {
         html, body { height: auto; }
         .page { width: 100%; padding: 0 12px; }
@@ -968,14 +1834,8 @@
         .section-header h2 { font-size: 2.4rem; }
         .home-title .line { font-size: 1.8rem; }
         .nav-row { justify-content: center; }
+        /* show hearts on mobile but gentler (fewer, smaller) */
         .floating-hearts { display: block; opacity: 0.78; }
-        .gift-screen .big-gift-box {
-          width: 200px;
-          height: 170px;
-        }
-        .gift-screen .gift-text {
-          font-size: 1.05rem;
-        }
       }
     </style>
   </head>
@@ -994,11 +1854,11 @@
             </h1>
 
             <div class="cta-row home-actions">
-              <button class="btn btn-primary" data-target="message">Xem lời chúc</button>
-              <button class="btn btn-secondary" data-target="gift" id="giftNavigateButton" type="button">
+              <button class="btn btn-primary magnetic-btn" data-target="message">Xem lời chúc</button>
+              <button class="btn btn-secondary magnetic-btn" data-target="gift" id="giftNavigateButton" type="button">
                 <span class="gift-button-inner">
                   <span class="gift-mini"><span class="gift-ribbon"></span></span>
-                  <span>Những điều anh muốn nói</span>
+                  <span>Món quà nhỏ</span>
                 </span>
               </button>
             </div>
@@ -1052,7 +1912,7 @@
       <div id="gift" class="screen">
         <div class="container gift-screen">
           <div class="gift-text">Một món quà nhỏ cho em</div>
-          <div class="big-gift-box" id="bigGiftBox" aria-label="Mở quà tặng">
+          <div class="big-gift-box" id="bigGiftBox" role="button" tabindex="0" aria-label="Mở quà tặng">
             <span class="gift-ribbon"></span>
             <div class="burst-layer" id="burstLayer" aria-hidden="true"></div>
           </div>
@@ -1066,12 +1926,27 @@
 
       <div class="password-modal" id="passwordModal" aria-hidden="true">
         <div class="password-panel">
-          <h3>Nhập mật khẩu</h3>
-          <input id="passwordInput" type="password" placeholder="Mật khẩu" maxlength="20" />
+          <div class="password-lock" id="passwordLock" aria-hidden="true">🔒</div>
+          <h3>Một bí mật dành riêng cho em</h3>
+          <p class="password-description">Anh đã cất một điều bất ngờ nhỏ phía sau chiếc hộp quà này.</p>
+          <p class="password-hint">Gợi ý: Em thử nhớ lại ngày kỷ niệm đặc biệt của hai đứa mình nhé.</p>
+          <div class="password-input-wrap">
+            <input id="passwordInput" type="password" placeholder="Mật khẩu" maxlength="20" aria-label="Nhập mật khẩu" />
+            <button class="password-visibility" id="togglePasswordVisibility" type="button" aria-controls="passwordInput" aria-pressed="false">Hiện</button>
+          </div>
           <div class="error-text" id="passwordError"></div>
           <div class="modal-actions">
-            <button class="cancel-btn" id="cancelPassword">Hủy</button>
-            <button class="submit-btn" id="submitPassword">Xác nhận</button>
+            <button class="submit-btn" id="submitPassword">Mở khoá trái tim</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="letter-reveal" id="letterReveal" aria-hidden="true">
+        <div class="envelope-stage">
+          <div class="letter-envelope">
+            <div class="envelope-paper">Thiệp chúc <span>♥</span></div>
+            <div class="envelope-front"></div>
+            <div class="envelope-flap"></div>
           </div>
         </div>
       </div>
@@ -1079,32 +1954,65 @@
       <div class="letter-modal" id="letterModal" aria-hidden="true">
         <div class="letter-card">
           <button class="close-letter" id="closeLetter" aria-label="Đóng thư">×</button>
-          <h3>Thiệp chúc</h3>
-          <p class="letter-content">
-            <strong>20/10</strong> không chỉ là ngày chúc, mà là một ngày để anh muốn nói với em rằng:<br />
-            “Em là điều khiến anh muốn giữ lại trong mỗi mùa của cuộc đời.<br />
-            Anh yêu em rất nhiều, và mong em luôn được hạnh phúc, bình an và được yêu thương.<br />
-            Chúc em luôn xinh đẹp, luôn vui vẻ, và luôn là phiên bản mạnh mẽ, đáng yêu nhất của chính mình.”
-          </p>
+          <div class="letter-scroll">
+            <div class="letter-kicker">Dành riêng cho em · 20/10</div>
+            <h3>Thiệp chúc</h3>
+            <div class="letter-divider" aria-hidden="true">♥</div>
+            <div class="letter-content">
+              <p><strong>20/10</strong> không chỉ là ngày chúc, mà còn là dịp để anh nói với em điều anh luôn nghĩ:</p>
+              <p>“Em là điều khiến anh muốn giữ lại trong mỗi mùa của cuộc đời.</p>
+              <p>Anh yêu em rất nhiều. Mong em luôn hạnh phúc, bình an và được yêu thương thật nhiều.</p>
+              <p>Chúc em luôn xinh đẹp, vui vẻ, và luôn là phiên bản mạnh mẽ, đáng yêu nhất của chính mình.”</p>
+            </div>
+            <p class="letter-signoff">Thương em thật nhiều ♥</p>
+            <button class="surprise-trigger" id="openSurprise" type="button">Còn một điều nữa... <span aria-hidden="true">♥</span></button>
+          </div>
         </div>
+      </div>
+
+      <div class="surprise-overlay" id="surpriseOverlay" aria-hidden="true">
+        <div class="surprise-sparkles" id="surpriseSparkles" aria-hidden="true"></div>
+        <section class="polaroid-card" role="dialog" aria-modal="true" aria-labelledby="polaroidTitle">
+          <button class="polaroid-close" id="closeSurprise" type="button" aria-label="Đóng khung ảnh">×</button>
+          <div class="polaroid-photo">
+            <div class="polaroid-placeholder" id="polaroidPlaceholder">
+              <span aria-hidden="true">💞</span>
+              <div>Khoảnh khắc của chúng mình</div>
+            </div>
+            <img id="polaroidImage" data-src="./20-10-assets/polaroid.jpg" alt="Kỷ niệm của hai chúng mình" hidden />
+          </div>
+          <h3 class="polaroid-caption" id="polaroidTitle">Một điều anh muốn em nhớ</h3>
+          <p class="polaroid-secret">Dù ngày mai có ra sao, anh vẫn muốn cùng em tạo thêm thật nhiều kỷ niệm đẹp. Thương em, hôm nay và những ngày sau nữa.</p>
+        </section>
       </div>
     </div>
 
     <script>
       const screens = document.querySelectorAll('.screen');
       const buttons = document.querySelectorAll('[data-target]');
-      const giftNavigateButton = document.getElementById('giftNavigateButton');
       const bigGiftBox = document.getElementById('bigGiftBox');
       const passwordModal = document.getElementById('passwordModal');
       const letterModal = document.getElementById('letterModal');
+      const letterReveal = document.getElementById('letterReveal');
+      const letterContent = letterModal.querySelector('.letter-content');
+      const letterSignoff = letterModal.querySelector('.letter-signoff');
       const passwordInput = document.getElementById('passwordInput');
+      const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
+      const passwordLock = document.getElementById('passwordLock');
       const passwordError = document.getElementById('passwordError');
       const submitPassword = document.getElementById('submitPassword');
       const cancelPassword = document.getElementById('cancelPassword');
       const closeLetter = document.getElementById('closeLetter');
+      const openSurprise = document.getElementById('openSurprise');
+      const surpriseOverlay = document.getElementById('surpriseOverlay');
+      const closeSurprise = document.getElementById('closeSurprise');
+      const surpriseSparkles = document.getElementById('surpriseSparkles');
+      const polaroidImage = document.getElementById('polaroidImage');
+      const polaroidPlaceholder = document.getElementById('polaroidPlaceholder');
       const burstLayer = document.getElementById('burstLayer');
 
       const correctPassword = '2102026';
+      let isUnlocking = false;
 
       async function showScreen(targetId) {
         screens.forEach(screen => {
@@ -1112,19 +2020,62 @@
         });
 
         if (targetId === 'message') {
+          // start typewriter effect when message screen becomes active
           await startTypingMessages();
         }
       }
 
       buttons.forEach(button => {
-        button.addEventListener('click', () => {
-          showScreen(button.dataset.target);
+        if (button.classList.contains('magnetic-btn')) {
+          button.addEventListener('pointermove', event => {
+            if (event.pointerType !== 'mouse') return;
+
+            const bounds = button.getBoundingClientRect();
+            const horizontalOffset = (event.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2);
+            const verticalOffset = (event.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2);
+            button.style.setProperty('--mag-x', `${horizontalOffset * 5}px`);
+            button.style.setProperty('--mag-y', `${verticalOffset * 4}px`);
+            button.classList.add('is-magnetic');
+          });
+
+          button.addEventListener('pointerleave', () => {
+            button.style.setProperty('--mag-x', '0px');
+            button.style.setProperty('--mag-y', '0px');
+            button.classList.remove('is-magnetic');
+          });
+        }
+
+        button.addEventListener('click', event => {
+          if (!button.classList.contains('magnetic-btn')) {
+            showScreen(button.dataset.target);
+            return;
+          }
+
+          if (button.classList.contains('is-rippling')) return;
+
+          const bounds = button.getBoundingClientRect();
+          const rippleX = event.detail ? event.clientX - bounds.left : bounds.width / 2;
+          const rippleY = event.detail ? event.clientY - bounds.top : bounds.height / 2;
+          button.style.setProperty('--ripple-x', `${rippleX}px`);
+          button.style.setProperty('--ripple-y', `${rippleY}px`);
+          button.classList.add('is-rippling');
+
+          setTimeout(() => {
+            button.classList.remove('is-rippling', 'is-magnetic');
+            button.style.setProperty('--mag-x', '0px');
+            button.style.setProperty('--mag-y', '0px');
+            showScreen(button.dataset.target);
+          }, 500);
         });
       });
 
       function openPasswordModal() {
         passwordModal.classList.add('show');
         passwordModal.setAttribute('aria-hidden', 'false');
+        passwordLock.textContent = '🔒';
+        passwordLock.classList.remove('unlocked');
+        submitPassword.disabled = false;
+        isUnlocking = false;
         passwordInput.value = '';
         passwordError.textContent = '';
         setTimeout(() => passwordInput.focus(), 50);
@@ -1137,14 +2088,92 @@
       }
 
       function openLetter() {
-        letterModal.classList.add('show');
-        letterModal.setAttribute('aria-hidden', 'false');
+        letterReveal.classList.remove('is-active', 'is-opening', 'is-fading');
+        letterModal.classList.remove('from-envelope');
+        letterContent.classList.remove('is-revealing');
+        letterSignoff.classList.remove('is-beating');
+        letterReveal.setAttribute('aria-hidden', 'false');
+        void letterReveal.offsetWidth;
+        letterReveal.classList.add('is-active');
+
+        setTimeout(() => letterReveal.classList.add('is-opening'), 360);
+        setTimeout(() => {
+          letterReveal.classList.add('is-fading');
+          letterModal.classList.add('show', 'from-envelope');
+          letterModal.setAttribute('aria-hidden', 'false');
+          letterContent.classList.add('is-revealing');
+          letterSignoff.classList.add('is-beating');
+          setTimeout(() => {
+            letterModal.classList.remove('from-envelope');
+          }, 450);
+          setTimeout(() => {
+            letterReveal.classList.remove('is-active', 'is-opening', 'is-fading');
+            letterReveal.setAttribute('aria-hidden', 'true');
+          }, 400);
+        }, 1680);
       }
 
       function closeLetterModal() {
         letterModal.classList.remove('show');
         letterModal.setAttribute('aria-hidden', 'true');
+        letterContent.classList.remove('is-revealing');
+        letterSignoff.classList.remove('is-beating');
       }
+
+      function createSurpriseSparkles() {
+        surpriseSparkles.innerHTML = '';
+        const symbols = ['♥', '✦', '✧'];
+        const colors = ['#ff89ad', '#ffd166', '#fff5fa'];
+
+        for (let i = 0; i < 18; i++) {
+          const sparkle = document.createElement('span');
+          sparkle.className = 'surprise-sparkle';
+          sparkle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          sparkle.style.setProperty('--sparkle-x', `${Math.random() * 100}%`);
+          sparkle.style.setProperty('--sparkle-y', `${34 + Math.random() * 56}%`);
+          sparkle.style.setProperty('--sparkle-color', colors[Math.floor(Math.random() * colors.length)]);
+          sparkle.style.setProperty('--sparkle-size', `${10 + Math.random() * 12}px`);
+          sparkle.style.setProperty('--sparkle-duration', `${900 + Math.random() * 800}ms`);
+          sparkle.style.setProperty('--sparkle-delay', `${Math.random() * 360}ms`);
+          surpriseSparkles.appendChild(sparkle);
+        }
+      }
+
+      function showSurprise() {
+        createSurpriseSparkles();
+        surpriseOverlay.classList.add('show');
+        surpriseOverlay.setAttribute('aria-hidden', 'false');
+        closeSurprise.focus();
+      }
+
+      function hideSurprise() {
+        surpriseOverlay.classList.remove('show');
+        surpriseOverlay.setAttribute('aria-hidden', 'true');
+        surpriseSparkles.innerHTML = '';
+        openSurprise.focus();
+      }
+
+      openSurprise.addEventListener('click', showSurprise);
+      closeSurprise.addEventListener('click', hideSurprise);
+
+      surpriseOverlay.addEventListener('click', event => {
+        if (event.target === surpriseOverlay) hideSurprise();
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && surpriseOverlay.classList.contains('show')) hideSurprise();
+      });
+
+      polaroidImage.addEventListener('load', () => {
+        polaroidImage.hidden = false;
+        polaroidPlaceholder.hidden = true;
+      });
+
+      polaroidImage.addEventListener('error', () => {
+        polaroidImage.hidden = true;
+        polaroidPlaceholder.hidden = false;
+      });
+      polaroidImage.src = polaroidImage.dataset.src;
 
       function spawnBurst() {
         burstLayer.innerHTML = '';
@@ -1171,6 +2200,44 @@
         }
       }
 
+      function spawnOpeningSparkles() {
+        burstLayer.innerHTML = '';
+
+        const pieces = 24;
+        for (let i = 0; i < pieces; i++) {
+          const sparkle = document.createElement('span');
+          const angle = (Math.PI * 2 * i) / pieces + (Math.random() - 0.5) * 0.18;
+          const distance = 56 + Math.random() * 100;
+
+          sparkle.className = 'burst-particle sparkle';
+          sparkle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+          sparkle.style.setProperty('--dy', `${Math.sin(angle) * distance - 12}px`);
+          sparkle.style.setProperty('--rot', `${Math.random() * 360}deg`);
+          sparkle.style.setProperty('--delay', `${Math.random() * 0.12}s`);
+          sparkle.style.setProperty('--size', `${5 + Math.random() * 8}px`);
+          burstLayer.appendChild(sparkle);
+        }
+      }
+
+      let giftOpening = false;
+
+      function startGiftOpening() {
+        if (giftOpening || passwordModal.classList.contains('show') || bigGiftBox.style.display === 'none') return;
+
+        giftOpening = true;
+        bigGiftBox.classList.remove('opening', 'lid-open');
+        void bigGiftBox.offsetWidth;
+        spawnOpeningSparkles();
+        bigGiftBox.classList.add('opening');
+
+        setTimeout(() => {
+          bigGiftBox.classList.remove('opening');
+          bigGiftBox.classList.add('lid-open');
+          giftOpening = false;
+          openPasswordModal();
+        }, 1050);
+      }
+
       function burstGift() {
         spawnBurst();
         bigGiftBox.classList.remove('shake-box');
@@ -1188,28 +2255,63 @@
         }, 650);
       }
 
-      giftNavigateButton.addEventListener('click', () => {
-        showScreen('gift');
+      bigGiftBox.addEventListener('pointermove', event => {
+        if (event.pointerType !== 'mouse' || giftOpening) return;
+
+        const bounds = bigGiftBox.getBoundingClientRect();
+        const offsetX = (event.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2);
+        const offsetY = (event.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2);
+        bigGiftBox.style.setProperty('--gift-tilt-x', `${offsetY * -5}deg`);
+        bigGiftBox.style.setProperty('--gift-tilt-y', `${offsetX * 6}deg`);
       });
 
-      bigGiftBox.addEventListener('click', openPasswordModal);
+      bigGiftBox.addEventListener('pointerleave', () => {
+        bigGiftBox.style.setProperty('--gift-tilt-x', '0deg');
+        bigGiftBox.style.setProperty('--gift-tilt-y', '0deg');
+      });
+
+      bigGiftBox.addEventListener('click', startGiftOpening);
+      bigGiftBox.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          startGiftOpening();
+        }
+      });
 
       submitPassword.addEventListener('click', () => {
+        if (isUnlocking) return;
         const value = passwordInput.value.trim();
 
         if (value === correctPassword) {
-          closePasswordModal();
-          burstGift();
+          isUnlocking = true;
+          submitPassword.disabled = true;
+          passwordLock.textContent = '💗';
+          passwordLock.classList.add('unlocked');
+          setTimeout(() => {
+            closePasswordModal();
+            burstGift();
+          }, 700);
         } else {
-          passwordError.textContent = 'Sai mật khẩu, vui lòng nhập lại.';
+          passwordError.textContent = 'Chưa đúng mất rồi! Thử lại nhé, trái tim vẫn chờ em 💗';
           passwordInput.classList.add('shake');
           setTimeout(() => passwordInput.classList.remove('shake'), 350);
           passwordInput.focus();
         }
       });
 
-      cancelPassword.addEventListener('click', closePasswordModal);
+      if (cancelPassword) cancelPassword.addEventListener('click', closePasswordModal);
       closeLetter.addEventListener('click', closeLetterModal);
+
+      togglePasswordVisibility.addEventListener('click', () => {
+        const showPassword = passwordInput.type === 'password';
+        passwordInput.type = showPassword ? 'text' : 'password';
+        togglePasswordVisibility.textContent = showPassword ? 'Ẩn' : 'Hiện';
+        togglePasswordVisibility.setAttribute('aria-pressed', `${showPassword}`);
+      });
+
+      passwordInput.addEventListener('input', () => {
+        passwordError.textContent = '';
+      });
 
       passwordModal.addEventListener('click', (event) => {
         if (event.target === passwordModal) closePasswordModal();
@@ -1225,6 +2327,7 @@
 
       const heartsContainer = document.getElementById('hearts');
 
+      // prepare helper and typing logic (robust for mobile)
       function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
       let _typingRunning = false;
 
@@ -1232,6 +2335,7 @@
         if (_typingRunning) return;
         _typingRunning = true;
 
+        // give the screen a moment to become visible and layout on mobile
         await sleep(160);
 
         const messageScreen = document.getElementById('message');
@@ -1242,16 +2346,19 @@
           }
         }
 
+        // re-select paragraphs to ensure up-to-date elements (handles mobile layout changes)
         const messageParas = document.querySelectorAll('#message .message-box p');
         if (!messageParas || messageParas.length === 0) {
           _typingRunning = false;
           return;
         }
 
+        // store originals if not already stored
         messageParas.forEach(p => {
           if (!p.dataset.original) p.dataset.original = p.textContent.trim();
         });
 
+        // clear and type
         for (const p of messageParas) {
           p.textContent = '';
           p.classList.add('typing');
@@ -1272,29 +2379,188 @@
 
       function createHeart() {
         const heart = document.createElement('div');
-        heart.className = 'heart';
-
         const isMobile = window.matchMedia('(max-width:900px)').matches;
-        const size = isMobile ? (Math.random() * 10 + 8) : (Math.random() * 18 + 12);
+        const depthRoll = Math.random();
+        const layer = depthRoll < 0.42
+          ? { name: 'heart--far', size: [8, 12], mobileSize: [5, 8], duration: [15, 19], mobileDuration: [13, 17], opacity: 0.42, parallax: -0.42, zIndex: 0 }
+          : depthRoll < 0.78
+            ? { name: 'heart--mid', size: [12, 18], mobileSize: [8, 13], duration: [10, 14], mobileDuration: [9, 12], opacity: 0.66, parallax: 0.48, zIndex: 1 }
+            : { name: 'heart--near', size: [18, 26], mobileSize: [12, 18], duration: [7, 10], mobileDuration: [7, 9], opacity: 0.9, parallax: 1.05, zIndex: 2 };
+
+        const sizeRange = isMobile ? layer.mobileSize : layer.size;
+        const durationRange = isMobile ? layer.mobileDuration : layer.duration;
+        const size = (sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0])) * (isMobile ? 0.9 : 1);
+        const animDur = durationRange[0] + Math.random() * (durationRange[1] - durationRange[0]);
+        const animationDelay = Math.random() * (isMobile ? 0.7 : 1.2);
+
+        heart.className = `heart ${layer.name}`;
         heart.style.width = `${size}px`;
         heart.style.height = `${size}px`;
         heart.style.left = `${Math.random() * 100}%`;
-
-        const animDur = isMobile ? (Math.random() * 4 + 6) : (Math.random() * 7 + 8);
         heart.style.animationDuration = `${animDur}s`;
-        heart.style.animationDelay = `${Math.random() * (isMobile ? 1.2 : 2)}s`;
+        heart.style.animationDelay = `${animationDelay}s`;
+        heart.style.setProperty('--heart-opacity', layer.opacity);
+        heart.dataset.parallaxDepth = `${layer.parallax}`;
+        heart.style.zIndex = `${layer.zIndex}`;
+        const horizontalPosition = pointerX / Math.max(window.innerWidth, 1) - 0.5;
+        const verticalPosition = pointerY / Math.max(window.innerHeight, 1) - 0.5;
+        const movementRange = isMobile ? 10 : 22;
+        heart.style.setProperty('--parallax-x', `${-horizontalPosition * movementRange * layer.parallax}px`);
+        heart.style.setProperty('--parallax-y', `${-verticalPosition * movementRange * layer.parallax}px`);
 
-        const pinkTones = ['rgba(255, 172, 201, 0.7)', 'rgba(255, 191, 214, 0.72)', 'rgba(255, 209, 223, 0.72)'];
+        const pinkTones = ['rgba(255, 91, 151, 0.84)', 'rgba(255, 116, 166, 0.82)', 'rgba(255, 139, 183, 0.8)'];
         const tone = pinkTones[Math.floor(Math.random() * pinkTones.length)];
+        heart.style.setProperty('--heart-color', tone);
         heart.style.background = tone;
         heart.style.boxShadow = `0 0 10px ${tone}`;
-        heart.style.zIndex = '0';
+
+        // ensure hearts stay behind main content visually
+        const lifetime = (animDur + animationDelay + 1) * 1000;
 
         heartsContainer.appendChild(heart);
 
-        setTimeout(() => { heart.remove(); }, isMobile ? 9000 : 15000);
+        setTimeout(() => { heart.remove(); }, lifetime);
       }
 
+      let parallaxFrame = 0;
+      let pointerX = window.innerWidth / 2;
+      let pointerY = window.innerHeight / 2;
+
+      function updateHeartParallax() {
+        const horizontalPosition = pointerX / Math.max(window.innerWidth, 1) - 0.5;
+        const verticalPosition = pointerY / Math.max(window.innerHeight, 1) - 0.5;
+        const movementRange = window.matchMedia('(max-width:900px)').matches ? 10 : 22;
+
+        heartsContainer.querySelectorAll('.heart').forEach(heart => {
+          const depth = Number(heart.dataset.parallaxDepth || 0);
+          heart.style.setProperty('--parallax-x', `${-horizontalPosition * movementRange * depth}px`);
+          heart.style.setProperty('--parallax-y', `${-verticalPosition * movementRange * depth}px`);
+        });
+        parallaxFrame = 0;
+      }
+
+      document.addEventListener('pointermove', event => {
+        if (event.pointerType !== 'mouse') return;
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+        if (!parallaxFrame) parallaxFrame = requestAnimationFrame(updateHeartParallax);
+      });
+
+      function resetHeartParallax() {
+        heartsContainer.querySelectorAll('.heart').forEach(heart => {
+          heart.style.setProperty('--parallax-x', '0px');
+          heart.style.setProperty('--parallax-y', '0px');
+        });
+      }
+
+      document.addEventListener('pointerout', event => {
+        if (!event.relatedTarget) resetHeartParallax();
+      });
+
+      window.addEventListener('blur', resetHeartParallax);
+
+      const interactionHeartColors = ['#ff78a5', '#ff9fbd', '#ffc0d2', '#f58ab4'];
+      const blockedInteractionSelector = 'button, a, input, textarea, select, .password-modal, .letter-modal, .big-gift-box';
+      let lastTrailX = -Infinity;
+      let lastTrailY = -Infinity;
+
+      function isBlockedInteraction(target) {
+        return target instanceof Element && Boolean(target.closest(blockedInteractionSelector));
+      }
+
+      function addInteractionHeart(x, y, burst = false, angle = 0) {
+        const heart = document.createElement('span');
+        const size = burst ? 8 + Math.random() * 8 : 7 + Math.random() * 6;
+        heart.className = `interaction-heart ${burst ? 'burst-heart' : 'trail-heart'}`;
+        heart.style.setProperty('--x', `${x}px`);
+        heart.style.setProperty('--y', `${y}px`);
+        heart.style.setProperty('--heart-size', `${size}px`);
+        heart.style.setProperty('--heart-color', interactionHeartColors[Math.floor(Math.random() * interactionHeartColors.length)]);
+
+        if (burst) {
+          const distance = 42 + Math.random() * 74;
+          heart.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+          heart.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+          heart.style.setProperty('--rotation', `${Math.random() * 100 - 50}deg`);
+          heart.style.setProperty('--delay', `${Math.random() * 90}ms`);
+        } else {
+          heart.style.setProperty('--drift-x', `${Math.random() * 24 - 12}px`);
+          heart.style.setProperty('--drift-y', `${-12 - Math.random() * 24}px`);
+        }
+
+        heartsContainer.appendChild(heart);
+        setTimeout(() => heart.remove(), burst ? 1200 : 900);
+      }
+
+      function burstHeartsAt(x, y) {
+        const count = 16;
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.16;
+          addInteractionHeart(x, y, true, angle);
+        }
+      }
+
+      document.addEventListener('pointermove', event => {
+        if (event.pointerType !== 'mouse' || isBlockedInteraction(event.target)) return;
+
+        const dx = event.clientX - lastTrailX;
+        const dy = event.clientY - lastTrailY;
+        if (dx * dx + dy * dy < 24 * 24) return;
+
+        lastTrailX = event.clientX;
+        lastTrailY = event.clientY;
+        addInteractionHeart(event.clientX, event.clientY);
+      });
+
+      document.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || isBlockedInteraction(event.target)) return;
+        burstHeartsAt(event.clientX, event.clientY);
+      });
+
+      const mainCard = document.querySelector('#home .card');
+
+      if (mainCard) {
+        mainCard.addEventListener('pointermove', event => {
+          if (event.pointerType !== 'mouse') return;
+
+          const bounds = mainCard.getBoundingClientRect();
+          const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+          const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+          mainCard.style.setProperty('--glow-x', `${x}%`);
+          mainCard.style.setProperty('--glow-y', `${y}%`);
+          mainCard.classList.add('has-mouse-glow');
+        });
+
+        mainCard.addEventListener('pointerleave', () => {
+          mainCard.classList.remove('has-mouse-glow');
+        });
+      }
+
+      document.querySelectorAll('#message .message-box').forEach(card => {
+        card.addEventListener('pointermove', event => {
+          if (event.pointerType !== 'mouse') return;
+
+          const bounds = card.getBoundingClientRect();
+          const relativeX = (event.clientX - bounds.left) / bounds.width - 0.5;
+          const relativeY = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+          card.style.setProperty('--tilt-x', `${relativeX * 5}deg`);
+          card.style.setProperty('--tilt-y', `${relativeY * -4}deg`);
+          card.style.setProperty('--light-x', `${(relativeX + 0.5) * 100}%`);
+          card.style.setProperty('--light-y', `${(relativeY + 0.5) * 100}%`);
+          card.style.setProperty('--lift', '-5px');
+          card.classList.add('is-hovered');
+        });
+
+        card.addEventListener('pointerleave', () => {
+          card.style.setProperty('--tilt-x', '0deg');
+          card.style.setProperty('--tilt-y', '0deg');
+          card.style.setProperty('--lift', '0px');
+          card.classList.remove('is-hovered');
+        });
+      });
+
+      // initial burst and interval tuned based on viewport
       (function startHearts() {
         const isMobile = window.matchMedia('(max-width:900px)').matches;
         const initialCount = isMobile ? 8 : 22;
